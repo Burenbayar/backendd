@@ -10,6 +10,10 @@ from openai import OpenAI
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+import os
+
 
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
@@ -26,7 +30,19 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # PostgreSQL өөрийн дата баазыг холбох
 # Жишээ: postgresql://username:password@localhost:5432/quizdb
+
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True  # Render дээр timeout crash-аас сэргийлнэ
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+
 
 # JWT
 SECRET_KEY = os.getenv("JWT_SECRET", "CHANGE_THIS_SECRET_KEY")
